@@ -15,15 +15,6 @@ def detect_block(inputs,out_channel):
     return x
     pass
 
-# M2SSDNetParams = collections.namedtuple('M2SSDNetParams',
-#                                         ['n_classes',
-#                                          'confidence_thresh',
-#                                          'iou_threshold',
-#                                          'variances',
-#                                          'min_scale',
-#                                          'max_scale',
-#                                          'max_n_anchors',
-#                                          'anchor_ratios'])
 
 def M2SSDNet(inputs_shape,net_params):
     inputs = tf.keras.layers.Input(shape=inputs_shape[1:],batch_size=inputs_shape[0])

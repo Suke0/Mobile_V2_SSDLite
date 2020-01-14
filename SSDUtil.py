@@ -8,7 +8,7 @@ def get_anchor_sizes(min_scale=0.1, max_scale=0.9,max_n_anchors=6,net_size=300):
     sizes = scales * net_size #[ 30.  70. 110. 150. 190. 230. 270.]
     anchor_sizes = []
     for i in range(0,len(sizes)-1):
-        anchor_sizes.append([round(sizes[i]),round(sizes[i+1])])
+        anchor_sizes.append([sizes[i],sizes[i+1]])
         pass
     return anchor_sizes
     pass
@@ -19,9 +19,9 @@ def get_anchors_wh(anchor_sizes,anchor_ratios):
         feat_anchors = []
         feat_anchors.append([anchor_size[0], anchor_size[0]])
         for val in anchor_ratio:
-            feat_anchors.append([round(anchor_size[0] * np.sqrt(val)), round(anchor_size[0] / np.sqrt(val))])
+            feat_anchors.append([anchor_size[0] * np.sqrt(val), anchor_size[0] / np.sqrt(val)])
             pass
-        feat_anchors.append([round(np.sqrt(anchor_size[0] * anchor_size[1])), round(np.sqrt(anchor_size[0] * anchor_size[1]))])
+        feat_anchors.append([np.sqrt(anchor_size[0] * anchor_size[1]), np.sqrt(anchor_size[0] * anchor_size[1])])
         anchors.append(feat_anchors)
         pass
     return np.array(anchors)
@@ -29,14 +29,20 @@ def get_anchors_wh(anchor_sizes,anchor_ratios):
 
 #计算anchor_for_layer,即(cx,cy,pw,ph),anchor_for_layer.shape(batch_size,img_w,img_h,n_anchors,4+4)
 def get_encode_anchor_for_layer(shape,anchors_wh,variances=[0.1,0.1,0.2,0.2],net_size=300):
-    #shape=(batch_size,img_w,img_h,n_anchors,4)
-    grid_x = range(0,shape[1])
-    grid_y = range(0,shape[2])
+    #shape=(batch_size,img_h,img_w,n_anchors,4)
+    step_h = net_size / shape[1]
+    step_w = net_size / shape[2]
+    start_x = 0.5 * step_h
+    end_x = (0.5 + shape[1] - 1) * step_h
+    start_y = 0.5 * step_w
+    end_y = (0.5 + shape[2] - 1) * step_w
+    grid_x = np.linspace(start_x, end_x, shape[1])
+    grid_y = np.linspace(start_y, end_y, shape[2])
     offset_x,offset_y = np.meshgrid(grid_x,grid_y)
     offset_x = np.reshape(offset_x,(-1,1))
     offset_y = np.reshape(offset_y,(-1,1))
     offset_xy = np.concatenate([offset_x,offset_y],-1)
-    offset_xy = np.around(offset_xy * net_size / shape[1])
+    #offset_xy = offset_xy * net_size / shape[1]
 
     offset_xy = np.expand_dims(offset_xy,1)
     offset_xy = np.tile(offset_xy,(1,shape[3],1))
